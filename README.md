@@ -3,6 +3,9 @@ EpForceDirectedGraph.cs
 =======================
 #### A 2D/3D force directed graph algorithm in C# ####
 
+This fork is for useage in Unity, leveraging compute shaders to do the force calculations on the GPU.
+
+
 
 Introduction
 ------------
