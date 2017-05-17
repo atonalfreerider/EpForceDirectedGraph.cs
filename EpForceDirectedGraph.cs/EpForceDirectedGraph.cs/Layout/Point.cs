@@ -129,6 +129,6 @@ namespace EpForceDirectedGraph.cs
             }
         }
         public AbstractVector velocity { get; private set; }
-        public AbstractVector acceleration { get; private set; }
+        public AbstractVector acceleration { get; set; }
      }
 }

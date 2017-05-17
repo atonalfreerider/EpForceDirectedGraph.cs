@@ -45,6 +45,33 @@ namespace EpForceDirectedGraph.cs
     public delegate void EdgeAction(Edge edge, Spring spring);
     public delegate void NodeAction(Node edge, Point point);
 
+    public class NearestPoint
+    {
+        public NearestPoint()
+        {
+            node = null;
+            point = null;
+            distance = null;
+        }
+        public Node node;
+        public Point point;
+        public float? distance;
+    }
+
+    public class BoundingBox
+    {
+        public static float defaultBB = 2.0f;
+        public static float defaultPadding = 0.07f; // ~5% padding
+
+        public BoundingBox()
+        {
+            topRightBack = null;
+            bottomLeftFront = null;
+        }
+        public AbstractVector topRightBack;
+        public AbstractVector bottomLeftFront;
+    }
+
     public interface IForceDirected
     {
         IGraph graph
