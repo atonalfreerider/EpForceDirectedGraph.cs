@@ -1,12 +1,6 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel ComputeForces
 
-struct Point
-{
-    float3 position;
-    float3 acceleration;
-};
-
 struct Spring
 {
     bool connected;
@@ -20,9 +14,22 @@ float CenterAttraction;
 int numPoints;
 
 // All of the points in the FDG;
-RWStructuredBuffer<Point> readPointBuffer;
-RWStructuredBuffer<Point> assignPointBuffer;
+RWStructuredBuffer<float3> readPointBuffer;
+RWStructuredBuffer<float3> assignAccelerationBuffer;
+RWBuffer<float> massBuffer;
 RWStructuredBuffer<Spring> springBuffer;
+
+
+float Distance(float3 passVector)
+{
+    float distance = sqrt(passVector.x * passVector.x + passVector.y * passVector.y + passVector.z * passVector.z);
+    if (distance == float(0))
+    {
+        // protect against divide by zero;
+        distance += float(.001);
+    }
+    return distance;
+}
 
 [numthreads(8, 8, 1)]
 void ComputeForces(uint3 id : SV_DispatchThreadID)
@@ -30,29 +37,30 @@ void ComputeForces(uint3 id : SV_DispatchThreadID)
     if (id.x != id.y)
     {
         // Apply Coulombs Law between two different points;
-        float3 interPointVector = readPointBuffer[id.x].position - readPointBuffer[id.y].position;
-        float distance = sqrt(interPointVector.x * interPointVector.x + interPointVector.y * interPointVector.y + interPointVector.z * interPointVector.z) + float(0.1);
+        float3 interPointVector = readPointBuffer[id.x] - readPointBuffer[id.y];
+        float distance = Distance(interPointVector);
         float3 normalizedDirection = interPointVector / distance;
         float3 force = (normalizedDirection * Repulsion) / (distance * float(0.5));
 
         if (springBuffer[id.x + id.y * numPoints].connected == true)
         {
             // apply Hookes Law between two points connected by a spring;
-            float displacement = springBuffer[id.x + id.y * numPoints].Length - distance;
-            force -= normalizedDirection * springBuffer[id.x + id.y * numPoints].K * displacement * float(-0.5);
+            float displacement = distance - springBuffer[id.x + id.y * numPoints].Length;
+            force -= normalizedDirection * springBuffer[id.x + id.y * numPoints].K * displacement * float(0.5);
         }
 
-        assignPointBuffer[id.x].acceleration += force;
-        assignPointBuffer[id.y].acceleration -= force;
+        assignAccelerationBuffer[id.x] += force / massBuffer[id.x];
+        assignAccelerationBuffer[id.y] -= force / massBuffer[id.y];
     }
     else
     {
         // attract this point to center;
-        float3 interPointVector = readPointBuffer[id.x].position;
-        float distance = sqrt(interPointVector.x * interPointVector.x + interPointVector.y * interPointVector.y + interPointVector.z * interPointVector.z) + float(0.1);
-        float3 normalizedDirection = interPointVector / distance;
-        float3 force = normalizedDirection * Stiffness * distance * float(-1) * CenterAttraction;
+        float3 pointVector = readPointBuffer[id.x];
+        float distance = Distance(pointVector);
+        float3 normalizedDirection = pointVector / distance;
+        float3 force = normalizedDirection * Stiffness * distance * CenterAttraction;
 
-        assignPointBuffer[id.x].acceleration += force;
+        assignAccelerationBuffer[id.x] -= force / massBuffer[id.x];
     }
 }
+

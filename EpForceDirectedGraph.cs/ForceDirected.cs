@@ -43,12 +43,6 @@ namespace Assets
 {
 
     // intermediary struct for Compute Shader;
-    public struct PointStruct
-    {
-        public Vector3 position;
-        public Vector3 acceleration;
-    }
-
     public struct SpringStruct
     {
         public bool connected;
@@ -104,7 +98,8 @@ namespace Assets
         private int mComputeShaderKernelID;
         ComputeShader computeShader;
         ComputeBuffer readPointBuffer;
-        ComputeBuffer assignPointBuffer;
+        ComputeBuffer assignAccelerationBuffer;
+        ComputeBuffer massBuffer;
         ComputeBuffer springBuffer;
 
         public ForceDirected(IGraph iGraph, float iStiffness, float iRepulsion, float iDamping, ComputeShader computeShader)
@@ -125,20 +120,25 @@ namespace Assets
             this.computeShader = computeShader;
 
             // Create the ComputeBuffer holding the Nodes
-            readPointBuffer = new ComputeBuffer(m_nodePoints.Values.Count, sizeof(float) * 3 * 2);
-            assignPointBuffer = new ComputeBuffer(m_nodePoints.Values.Count, sizeof(float) * 3 * 2);
-            SetPointBufferData(assignPointBuffer);
+            readPointBuffer = new ComputeBuffer(m_nodePoints.Values.Count, sizeof(float) * 3);
+            assignAccelerationBuffer = new ComputeBuffer(m_nodePoints.Values.Count, sizeof(float) * 3);
+
+            massBuffer = new ComputeBuffer(m_nodePoints.Values.Count, sizeof(float));
+            SetMassBufferData();
 
             springBuffer = new ComputeBuffer(m_nodePoints.Values.Count * m_nodePoints.Values.Count, sizeof(float) * 3);
             SetSpringBufferData();
-
+            
             // Find the id of the kernel
             mComputeShaderKernelID = computeShader.FindKernel("ComputeForces");
 
             // Bind the ComputeBuffer to the compute shader
             computeShader.SetBuffer(mComputeShaderKernelID, "readPointBuffer", readPointBuffer);
-            computeShader.SetBuffer(mComputeShaderKernelID, "assignPointBuffer", assignPointBuffer);
+            computeShader.SetBuffer(mComputeShaderKernelID, "assignAccelerationBuffer", assignAccelerationBuffer);
+            computeShader.SetBuffer(mComputeShaderKernelID, "massBuffer", massBuffer);
             computeShader.SetBuffer(mComputeShaderKernelID, "springBuffer", springBuffer);
+
+            // assign constants;
             computeShader.SetFloat("Repulsion", Repulsion);
             computeShader.SetFloat("Stiffness", Stiffness);
             computeShader.SetFloat("CenterAttraction", 2f);
@@ -146,20 +146,32 @@ namespace Assets
 
         }
 
-        void SetPointBufferData(ComputeBuffer setPointBuffer)
+        void SetPointBufferData()
         {
             // copy positions and accelerations of nodes into intermediary array for compute buffer;
-            PointStruct[] pointArr = new PointStruct[m_nodePoints.Values.Count];
+            Vector3[] pointArr = new Vector3[m_nodePoints.Values.Count];
             int count = 0;
             foreach (Point point in m_nodePoints.Values)
             {
-                pointArr[count].position = new Vector3(point.position.x, point.position.y, point.position.z);
-                pointArr[count].acceleration = new Vector3(point.acceleration.x, point.acceleration.y, point.acceleration.z);
+                pointArr[count] = new Vector3(point.position.x, point.position.y, point.position.z);
                 count++;
             }
 
-            setPointBuffer.SetData(pointArr);
+            readPointBuffer.SetData(pointArr);
+        }
 
+        void ZeroAccelerationBufferData()
+        {
+            // copy positions and accelerations of nodes into intermediary array for compute buffer;
+            Vector3[] accelerationArray = new Vector3[m_nodePoints.Values.Count];
+            int count = 0;
+            foreach (Point point in m_nodePoints.Values)
+            {
+                accelerationArray[count] = Vector3.zero;
+                count++;
+            }
+
+            assignAccelerationBuffer.SetData(accelerationArray);
         }
 
         void SetSpringBufferData()
@@ -183,6 +195,19 @@ namespace Assets
             }
 
             springBuffer.SetData(springs);
+        }
+
+        void SetMassBufferData()
+        {
+            float[] masses = new float[graph.nodes.Count];
+            int count = 0;
+            foreach (Node n in graph.nodes)
+            {
+                masses[count] = n.Data.mass;
+                count++;
+            }
+
+            massBuffer.SetData(masses);
         }
 
         public abstract Point GetPoint(Node iNode);
@@ -239,8 +264,10 @@ namespace Assets
         {
             if (readPointBuffer != null)
                 readPointBuffer.Dispose();
-            if (assignPointBuffer != null)
-                assignPointBuffer.Dispose();
+            if (assignAccelerationBuffer != null)
+                assignAccelerationBuffer.Dispose();
+            if (massBuffer != null)
+                massBuffer.Dispose();
             if (springBuffer != null)
                 springBuffer.Dispose();
         }
@@ -251,8 +278,7 @@ namespace Assets
             {
                 Point point = GetPoint(n);
                 point.velocity.Add(point.acceleration * iTimeStep);
-                point.velocity.Multiply(Damping);
-                Damping *= .9999f;
+                point.velocity.Multiply(Damping);                
                 point.acceleration.SetZero();
             }
         }
@@ -279,19 +305,20 @@ namespace Assets
         }
 
         public void Calculate(float iTimeStep) // time in second
-        {
-            SetPointBufferData(readPointBuffer);
+        { 
+            SetPointBufferData();
+            ZeroAccelerationBufferData();
 
             // Calculate the repulsive force between every node in the graph;
             computeShader.Dispatch(mComputeShaderKernelID, m_nodePoints.Values.Count, m_nodePoints.Values.Count, 1);
 
             // copy the output of the compute shader into the dictionary containing the points;
-            PointStruct[] pointArr = new PointStruct[m_nodePoints.Values.Count];
-            assignPointBuffer.GetData(pointArr);
+            Vector3[] accelerationAssingmnets = new Vector3[m_nodePoints.Values.Count];
+            assignAccelerationBuffer.GetData(accelerationAssingmnets);
             int count = 0;
             foreach (Point p in m_nodePoints.Values)
             {
-                p.acceleration = new FDGVector3(pointArr[count].acceleration.x, pointArr[count].acceleration.y, pointArr[count].acceleration.z);
+                p.acceleration = new FDGVector3(accelerationAssingmnets[count].x, accelerationAssingmnets[count].y, accelerationAssingmnets[count].z);
                 count++;
             }
 
@@ -303,6 +330,8 @@ namespace Assets
             }
             else
                 WithinThreashold = false;
+
+            Damping *= .999999f;
         }
 
         public void EachEdge(EdgeAction del)
