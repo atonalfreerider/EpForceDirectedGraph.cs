@@ -49,7 +49,7 @@ namespace EpForceDirectedGraph.cs
             ID = iId;
             Source = iSource;
             Target = iTarget;
-            Data = (iData != null) ? iData : new EdgeData();
+            Data = iData ?? new EdgeData();
             Directed = false;
         }
 
@@ -86,17 +86,13 @@ namespace EpForceDirectedGraph.cs
         {
             return ID.GetHashCode();
         }
-        public override bool Equals(System.Object obj)
+        public override bool Equals(object obj)
         {
             // If parameter is null return false.
-            if (obj == null)
-            {
-                return false;
-            }
 
             // If parameter cannot be cast to Point return false.
             Edge p = obj as Edge;
-            if ((System.Object)p == null)
+            if ((object) p == null)
             {
                 return false;
             }
@@ -120,7 +116,7 @@ namespace EpForceDirectedGraph.cs
         public static bool operator ==(Edge a, Edge b)
         {
             // If both are null, or both are same instance, return true.
-            if (System.Object.ReferenceEquals(a, b))
+            if (ReferenceEquals(a, b))
             {
                 return true;
             }

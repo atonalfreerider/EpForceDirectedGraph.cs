@@ -45,11 +45,11 @@ namespace EpForceDirectedGraph.cs
 {
     public class PriorityQueue<T> where T : IComparable
     {
-        private List<T> m_data;
+        private readonly List<T> m_data;
 
         public PriorityQueue()
         {
-            this.m_data = new List<T>();
+            m_data = new List<T>();
         }
 
         public void Enqueue(T queueItem)
@@ -81,13 +81,7 @@ namespace EpForceDirectedGraph.cs
         {
             return m_data.Contains(queueItem);
         }
-        public int Count
-        {
-            get
-            {
-                return m_data.Count;
-            }
-        }
+        public int Count => m_data.Count;
     }
 
 }

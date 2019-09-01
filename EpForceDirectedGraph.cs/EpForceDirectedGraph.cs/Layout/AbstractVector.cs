@@ -79,57 +79,72 @@ namespace EpForceDirectedGraph.cs
 
         public static AbstractVector operator +(AbstractVector a, AbstractVector b)
         {
-            if (a is FDGVector2 && b is FDGVector2)
-                return (a as FDGVector2) + (b as FDGVector2);
-            else if (a is FDGVector3 && b is FDGVector3)
-                return (a as FDGVector3) + (b as FDGVector3);
-            return null;
+            switch (a) {
+                case FDGVector2 vector2 when b is FDGVector2 fdgVector2:
+                    return vector2 + fdgVector2;
+                case FDGVector3 vector3 when b is FDGVector3 fdgVector3:
+                    return vector3 + fdgVector3;
+                default:
+                    return null;
+            }
         }
         public static AbstractVector operator -(AbstractVector a, AbstractVector b)
         {
-            if (a is FDGVector2 && b is FDGVector2)
-                return (a as FDGVector2) - (b as FDGVector2);
-            else if (a is FDGVector3 && b is FDGVector3)
-                return (a as FDGVector3) - (b as FDGVector3);
-            return null;
+            switch (a) {
+                case FDGVector2 vector2 when b is FDGVector2 fdgVector2:
+                    return vector2 - fdgVector2;
+                case FDGVector3 vector3 when b is FDGVector3 fdgVector3:
+                    return vector3 - fdgVector3;
+                default:
+                    return null;
+            }
         }
         public static AbstractVector operator *(AbstractVector a, float b)
         {
-            if (a is FDGVector2)
-                return (a as FDGVector2) * b;
-            else if (a is FDGVector3)
-                return (a as FDGVector3) * b;
-            return null;
+            switch (a) {
+                case FDGVector2 vector2:
+                    return vector2 * b;
+                case FDGVector3 vector3:
+                    return vector3 * b;
+                default:
+                    return null;
+            }
         }
         public static AbstractVector operator *(float a, AbstractVector b)
         {
-            if (b is FDGVector2)
-                return a * (b as FDGVector2);
-            else if (b is FDGVector3)
-                return a * (b as FDGVector3);
-            return null;
+            switch (b) {
+                case FDGVector2 vector2:
+                    return a * vector2;
+                case FDGVector3 vector3:
+                    return a * vector3;
+                default:
+                    return null;
+            }
         }
 
         public static AbstractVector operator /(AbstractVector a, float b)
         {
-            if (a is FDGVector2)
-                return (a as FDGVector2) / b;
-            else if (a is FDGVector3)
-                return (a as FDGVector3) / b;
-            return null;
+            switch (a) {
+                case FDGVector2 vector2:
+                    return vector2 / b;
+                case FDGVector3 vector3:
+                    return vector3 / b;
+                default:
+                    return null;
+            }
         }
         public override int GetHashCode()
         {
             return base.GetHashCode();
         }
-        public override bool Equals(System.Object obj)
+        public override bool Equals(object obj)
         {
             return this==(obj as AbstractVector);
         }
         public static bool operator ==(AbstractVector a, AbstractVector b)
         {
             // If both are null, or both are same instance, return true.
-            if (System.Object.ReferenceEquals(a, b))
+            if (ReferenceEquals(a, b))
             {
                 return true;
             }
@@ -140,23 +155,20 @@ namespace EpForceDirectedGraph.cs
                 return false;
             }
 
-            // Return true if the fields match:
-            if (a is FDGVector2 && b is FDGVector2)
-                return (a as FDGVector2) == (b as FDGVector2);
-            else if (a is FDGVector3 && b is FDGVector3)
-                return (a as FDGVector3) == (b as FDGVector3);
-            return false;
-
+            switch (a) {
+                // Return true if the fields match:
+                case FDGVector2 vector2 when b is FDGVector2 fdgVector2:
+                    return vector2 == fdgVector2;
+                case FDGVector3 vector3 when b is FDGVector3 fdgVector3:
+                    return vector3 == fdgVector3;
+                default:
+                    return false;
+            }
         }
 
         public static bool operator !=(AbstractVector a, AbstractVector b)
         {
             return !(a == b);
         }
-
-
-
     }
-
-
 }

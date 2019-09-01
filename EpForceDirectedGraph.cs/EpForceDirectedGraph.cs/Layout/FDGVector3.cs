@@ -66,17 +66,13 @@ namespace EpForceDirectedGraph.cs
         {
             return (int)x^(int)y^(int)z;
         }
-        public override bool Equals(System.Object obj)
+        public override bool Equals(object obj)
         {
             // If parameter is null return false.
-            if (obj == null)
-            {
-                return false;
-            }
 
             // If parameter cannot be cast to Point return false.
             FDGVector3 p = obj as FDGVector3;
-            if ((System.Object)p == null)
+            if ((object) p == null)
             {
                 return false;
             }
@@ -100,7 +96,7 @@ namespace EpForceDirectedGraph.cs
         public static bool operator ==(FDGVector3 a, FDGVector3 b)
         {
             // If both are null, or both are same instance, return true.
-            if (System.Object.ReferenceEquals(a, b))
+            if (ReferenceEquals(a, b))
             {
                 return true;
             }
@@ -124,26 +120,26 @@ namespace EpForceDirectedGraph.cs
         public override AbstractVector Add(AbstractVector v2)
         {
             FDGVector3 v32 = v2 as FDGVector3;
-            x = x + v32.x;
-            y = y + v32.y;
-            z = z + v32.z;
+            x += v32.x;
+            y += v32.y;
+            z += v32.z;
             return this;
         }
 
         public override AbstractVector Subtract(AbstractVector v2)
         {
             FDGVector3 v32 = v2 as FDGVector3;
-            x = x - v32.x;
-            y = y - v32.y;
-            z = z - v32.z;
+            x -= v32.x;
+            y -= v32.y;
+            z -= v32.z;
             return this;
         }
 
         public override AbstractVector Multiply(float n)
         {
-            x=x*n;
-            y=y*n;
-            z = z * n;
+            x *= n;
+            y *= n;
+            z *= n;
             return this;
         }
 
@@ -157,9 +153,9 @@ namespace EpForceDirectedGraph.cs
             }
             else
             {
-                x=x/n;
-                y=y/n;
-                z = z / n;
+                x /= n;
+                y /= n;
+                z /= n;
             }
             return this;
         }

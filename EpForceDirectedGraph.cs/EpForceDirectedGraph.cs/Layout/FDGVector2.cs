@@ -65,17 +65,13 @@ namespace EpForceDirectedGraph.cs
         {
             return (int)x^(int)y;
         }
-        public override bool Equals(System.Object obj)
+        public override bool Equals(object obj)
         {
             // If parameter is null return false.
-            if (obj == null)
-            {
-                return false;
-            }
 
             // If parameter cannot be cast to Point return false.
             FDGVector2 p = obj as FDGVector2;
-            if ((System.Object)p == null)
+            if ((object) p == null)
             {
                 return false;
             }
@@ -123,23 +119,23 @@ namespace EpForceDirectedGraph.cs
         public override AbstractVector Add(AbstractVector v2)
         {
             FDGVector2 v22 = v2 as FDGVector2;
-            x= x+v22.x;
-            y=y+v22.y;
+            x += v22.x;
+            y += v22.y;
             return this;
         }
 
         public override AbstractVector Subtract(AbstractVector v2)
         {
             FDGVector2 v22 = v2 as FDGVector2;
-            x=x-v22.x;
-            y=y-v22.y;
+            x -= v22.x;
+            y -= v22.y;
             return this;
         }
 
         public override AbstractVector Multiply(float n)
         {
-            x=x*n;
-            y=y*n;
+            x *= n;
+            y *= n;
             return this;
         }
 
@@ -239,6 +235,5 @@ namespace EpForceDirectedGraph.cs
             temp.Divide(a);
             return temp;
         }
-
     }
 }

@@ -44,7 +44,7 @@ namespace EpForceDirectedGraph.cs
 {
     public class Util
     {
-        private static Random random = new Random();
+        static readonly Random random = new Random();
         public static float Random()
         {
             var result = random.NextDouble();

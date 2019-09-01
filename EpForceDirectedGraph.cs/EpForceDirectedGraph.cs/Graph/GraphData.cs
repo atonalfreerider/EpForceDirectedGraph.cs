@@ -93,7 +93,5 @@ namespace EpForceDirectedGraph.cs
             get;
             set;
         }
-
-
     }
 }

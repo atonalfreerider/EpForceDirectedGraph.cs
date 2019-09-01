@@ -35,6 +35,7 @@ THE SOFTWARE.
 An Interface for the ForceDirected.
 
 */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +44,7 @@ using System.Text;
 namespace EpForceDirectedGraph.cs
 {
     public delegate void EdgeAction(Edge edge, Spring spring);
+
     public delegate void NodeAction(Node edge, Point point);
 
     public class NearestPoint
@@ -53,6 +55,7 @@ namespace EpForceDirectedGraph.cs
             point = null;
             distance = null;
         }
+
         public Node node;
         public Point point;
         public float? distance;
@@ -68,41 +71,27 @@ namespace EpForceDirectedGraph.cs
             topRightBack = null;
             bottomLeftFront = null;
         }
+
         public AbstractVector topRightBack;
         public AbstractVector bottomLeftFront;
     }
 
     public interface IForceDirected
     {
-        IGraph graph
-        {
-            get;
-        }
+        IGraph graph { get; }
 
-        float Stiffness
-        {
-            get;
-        }
+        float Stiffness { get; }
 
-        float Repulsion
-        {
-            get;
-        }
+        float Repulsion { get; }
 
-        float Damping
-        {
-            get;
-        }
+        float Damping { get; }
 
         float Threadshold // NOT Using
         {
             get;
             set;
         }
-        bool WithinThreashold
-        {
-            get;
-        }
+        bool WithinThreashold { get; }
         void Clear();
         void Calculate(float iTimeStep);
         void EachEdge(EdgeAction del);
